@@ -57,6 +57,8 @@ GPIO_OUT_XOR is at offset 0x028 and again uses bits for 0 to 31
 
 #define GPIO_OUT_XOR_OFFSET 0x028
 
+// For building we must specify for which board we are building "cmake -DPICO_BOARD=pico2_w .."
+
 int main(){
 
     //Set GPIO22 to SIO mode
