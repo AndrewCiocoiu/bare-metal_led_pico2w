@@ -3,7 +3,16 @@
 #include <stdint.h>
 
 /*
-io_bank controls pin configurations
+On pico 2w all pins are by default electronically sealed on boot we need to unseal them using the
+pads block of memory. The pad for gpio22 is at offset 0x5c. It's 8th bit controls its ISO(Isolation Latch)
+it's set to 1 by default we need to set it to 0 to unlocj the latch
+*/
+
+#define PADS_BANK0_BASE 0x40038000
+#define PADS_GPIO22_OFFSET 0x5C
+
+/*
+io_bank controls pin configurations eg their mode
 Its starting memory address can be found in the "Memory Map" secction of the DataSheet specifically
 as APB registers
 
@@ -54,10 +63,12 @@ int main(){
     *(volatile uint32_t*)(IO_BANK0_BASE + GPIO22_CTRL_OFFSET) = 0x05;
     //Enable output mode on GPIO22
     *(volatile uint32_t*)(SIO_BASE + GPIO_OE_OFFSET) = (1 << 22);
+    //Open the latch of GPIO22 so current can flow(set 8th bit of bank to 0)
+    *(volatile uint32_t*)(PADS_BANK0_BASE + PADS_GPIO22_OFFSET) &= ~(1 << 8);
 
     while(1){
         //Enable a wait so we perceive the change in LED.
-        for(volatile int i = 0; i < 1000000; i++){}
+        for(volatile int i = 0; i < 6000000; i++){}
         
         //Repeatedly set the current to high or low on GPIO22 using xor (could have also used GPIO_OUT_XOR)
         *(volatile uint32_t*)(SIO_BASE + GPIO_OUT_XOR_OFFSET) = (1 << 22);
